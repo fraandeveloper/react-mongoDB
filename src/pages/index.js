@@ -15,21 +15,26 @@ export default function Home() {
   const [clients, setClients] = useState([]);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [errors, setErrors] = useState({name: null, email: null});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmitClient = async (e) => {
     e.preventDefault();
     if (!isValidForm()) return;
 
     try {
+      setIsLoading(true);
+
       const { data: { data = {}} = {}} = await api.post('/clients', { name, email})
-       
       setClients(clients.concat(data));
   
       setId(null);
       setName('');
       setEmail('');
+      setIsLoading(false);
+      setIsOpenForm(false);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
     }
   }
 
@@ -38,15 +43,18 @@ export default function Home() {
     if (!isValidForm()) return;
 
     try {
-      const res = await api.post('/clients', { name, email});
-      console.log(res);
-      return;
-       setClients(clients.map(client => client.id === id ? {id: id, name, email} : client));
-  
+      setIsLoading(true);
+
+      await api.put(`/clients/${id}`, { name, email});
+      setClients(clients.map(client => client._id === id ? {_id: id, name, email} : client));
+      
+      setId(null)
       setName('');
       setEmail('');
+      setIsLoading(false);
+      handleToggleForm();
     } catch (error) {
-      
+      setIsLoading(false);
     }
   }
 
@@ -68,10 +76,11 @@ export default function Home() {
   }
 
   const handleSetUpdateFormClient = (client) => {
-    const { id, name, email } = client || {};
-    setId(id)
-    setName(name)
-    setEmail(email)
+    const { _id, name, email } = client || {};
+    setId(_id);
+    setName(name);
+    setEmail(email);
+    setIsOpenForm(true);
   }
 
   const handleToggleForm = () => {
@@ -105,7 +114,7 @@ export default function Home() {
     <Box margin="4">
       <Flex color="white" justifyContent="space-between" margin="4">
           <Text fontSize="lg" color="gray.500">Lista de Clientes</Text>
-          <Button size="md" height="40px" width="40px" border="2px" colorScheme="blue" variant="solid" onClick={handleToggleForm}>{isOpenForm ? <MinusIcon w={4} h={4} /> : <AddIcon w={4} h={4} />}</Button>
+          <Button size="md" height="40px" width="40px" border="2px" colorScheme="purple" variant="solid" onClick={handleToggleForm}>{isOpenForm ? <MinusIcon w={4} h={4} /> : <AddIcon w={4} h={4} />}</Button>
       </Flex>
 
       {
@@ -114,18 +123,17 @@ export default function Home() {
             <InputForm type="text" label="Nome" name="name" id="name" value={name} error={errors.name} onChange={(e) => handleChangeName(e)} />
             <InputForm type="email" label="E-mail" name="email" id="email" value={email} error={errors.email} onChange={(e) => handleChangeEmail(e)} />
 
-            <Button marginY="4" alignSelf="flex-end" colorScheme="blue" type="submit">{id ? 'Atualizar' : 'Cadastrar'}</Button>
+            <Button marginY="4" alignSelf="flex-end" colorScheme="purple" type="submit" isLoading={isLoading}>{id ? 'Atualizar' : 'Cadastrar'}</Button>
           </VStack>
         )
       }
 
-      <Table colorScheme="teal" my="4">
-        <TableCaption>Imperial to metric conversion factors</TableCaption>
-        <Thead >
+      <Table variant="simple" my="10">
+        <Thead bgColor="purple.500">
           <Tr>
-            <Th>Nome</Th>
-            <Th>E-mail</Th>
-            <Th>Acões</Th>
+            <Th textColor="white">Nome</Th>
+            <Th textColor="white">E-mail</Th>
+            <Th textColor="white">Acões</Th>
           </Tr>
         </Thead>
         <Tbody>

@@ -15,7 +15,7 @@ export default async function handler(req, res) {
         if (!name && !email) throw 'Invalid data';
 
         await Client.updateOne({_id: id}, {name, email});
-        res.status(200).json({success: true, data: clients});
+        res.status(200).json({ success: true });
 
       } catch (error) {
         console.error(error);
@@ -25,11 +25,11 @@ export default async function handler(req, res) {
     case 'DELETE':
       try {
         await Client.deleteOne({_id: id});
-        res.status(201).json({success: true});
+        res.status(201).json({ success: true });
 
       } catch (error) {
         console.error(error);
-        res.status(500).json({success: false, error});
+        res.status(500).json({ success: false, error });
       }
     break;
   }
