@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Box, Flex,Text, Button, Table, Thead, Tbody, Tr, Th, Td, TableCaption, VStack } from '@chakra-ui/react';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons'
@@ -58,8 +58,13 @@ export default function Home() {
     setEmail(value);
   }
 
-  const handleDeleteClient = (clientId) => {
-    setClients(clients.filter(client => client._id != clientId));
+  const handleDeleteClient = async (clientId) => {
+    try {
+      await api.delete(`/clients/${clientId}`)
+      setClients(clients.filter(client => client._id != clientId));
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const handleSetUpdateFormClient = (client) => {
@@ -82,6 +87,19 @@ export default function Home() {
     setErrors({});
     return true;
   }
+
+  const fetchClients = async () => {
+    try {
+      const {data: { data }} = await api.get('/clients');
+      setClients(data);
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchClients();
+  }, [])
 
   return (
     <Box margin="4">
@@ -119,7 +137,7 @@ export default function Home() {
                 <Td>
                   <Flex justifyContent="space-between">
                     <Button size="sm" colorScheme="yellow" onClick={() => handleSetUpdateFormClient(item)}>Editar</Button>
-                    <Button size="sm" colorScheme="red" onClick={() => handleDeleteClient(item.id)}>Remover</Button>
+                    <Button size="sm" colorScheme="red" onClick={() => handleDeleteClient(item._id)}>Remover</Button>
                   </Flex>
                 </Td>
               </Tr>
