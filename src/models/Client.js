@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ClientSchema =  new mongoose.Schema({
+const ClientSchema = new mongoose.Schema({
   name: String,
   email: String,
   createdAt: {
@@ -9,6 +9,6 @@ const ClientSchema =  new mongoose.Schema({
   }
 })
 
-const Client = mongoose.model('Client', ClientSchema);
+const Client =  mongoose.models.Client || mongoose.model('Client', ClientSchema)
 
 export default Client;

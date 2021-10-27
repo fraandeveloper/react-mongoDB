@@ -5,6 +5,8 @@ import { AddIcon, MinusIcon } from '@chakra-ui/icons'
 
 import InputForm from '../components/Input';
 
+import api from '../services/api';
+
 
 export default function Home() {
   const [id, setId] = useState(null);
@@ -14,25 +16,38 @@ export default function Home() {
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [errors, setErrors] = useState({name: null, email: null});
 
-  const handleSubmitClient = (e) => {
+  const handleSubmitClient = async (e) => {
     e.preventDefault();
     if (!isValidForm()) return;
 
-    setClients(clients.concat({id: new Date().getMilliseconds().toString(), name, email}));
-
-    setId(null);
-    setName('');
-    setEmail('');
+    try {
+      const { data: { data = {}} = {}} = await api.post('/clients', { name, email})
+       
+      setClients(clients.concat(data));
+  
+      setId(null);
+      setName('');
+      setEmail('');
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  const handleUpdateClient = (e) => {
+  const handleUpdateClient = async (e) => {
     e.preventDefault();
     if (!isValidForm()) return;
 
-    setClients(clients.map(client => client.id === id ? {id: id, name, email} : client));
-
-    setName('');
-    setEmail('');
+    try {
+      const res = await api.post('/clients', { name, email});
+      console.log(res);
+      return;
+       setClients(clients.map(client => client.id === id ? {id: id, name, email} : client));
+  
+      setName('');
+      setEmail('');
+    } catch (error) {
+      
+    }
   }
 
   const handleChangeName = ({target: { value }}) => {
@@ -44,7 +59,7 @@ export default function Home() {
   }
 
   const handleDeleteClient = (clientId) => {
-    setClients(clients.filter(client => client.id != clientId));
+    setClients(clients.filter(client => client._id != clientId));
   }
 
   const handleSetUpdateFormClient = (client) => {
@@ -59,7 +74,7 @@ export default function Home() {
   }
 
   const isValidForm = () => {
-    if (clients.some(client => client.id !== id && client.email === email)) {
+    if (clients.some(client => client._id !== id && client.email === email)) {
       setErrors({email: "Cliente já em uso!"});
       return
     }
@@ -98,7 +113,7 @@ export default function Home() {
         <Tbody>
           {
             clients.map((item) => (
-              <Tr key={item.id}>
+              <Tr key={item._id}>
                 <Td>{ item.name }</Td>
                 <Td>{ item.email }</Td>
                 <Td>
